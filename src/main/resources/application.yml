@@ -1,0 +1,49 @@
+server:
+  port: 17900
+
+spring:
+  main:
+    web-application-type: servlet
+  datasource:
+    #    url: jdbc:h2:tcp://localhost/~/test
+    #    driver-class-name: org.h2.Driver
+    #    username: sa
+    #    password: 12345
+    #    url: jdbc:mysql:tcp://localhost:3306?serverTimezone=UTC&characterEncoding=UTF-8
+    # url: jdbc:mariadb://scanbe-db.cuzwdpktjs7x.us-east-2.rds.amazonaws.com:3306/sndnote?serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mariadb://192.168.123.25:3306/scbjob?serverTimezone=UTC&characterEncoding=UTF-8
+    #    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.mariadb.jdbc.Driver
+    # username: scanbe
+    # password: Tmzosql21!!
+    username: root
+    password: tmzosql2020!
+  jpa:
+    #    database-platform: org.hibernate.dialect.H2Dialect
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    properties.hibernate.hbm2ddl.auto: update
+    showSql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+#  mybatis:
+#    database: mysql
+#      database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+#      properties.hibernate.hbm2ddl.auto: update
+#      showSql: true
+  messages:
+    basename: i18n/exception
+    encoding: UTF-8
+  logging:
+    level:
+      org.springframework: INFO
+      org.springframework.web: DEBUG
+      org.hibernate.SQL: DEBUG
+  jwt:
+    secret: __K@!__
+  entryPointException:
+    code: "-2000"
+    msg: "해당 리소스 접근 권한 없음"
+
