@@ -4,6 +4,7 @@ package TestReact.k.JpaRepo;
 import TestReact.k.Entity.Tbl_ProjectSet_WorkCate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 
 import javax.persistence.NamedNativeQuery;
 import java.util.List;
@@ -44,4 +45,24 @@ public interface Repo_ProjectSet_WorkCate extends JpaRepository<Tbl_ProjectSet_W
             "SELECT id, title, getpath(id) AS path FROM category ORDER BY path;",
             nativeQuery = true)
     List<Tbl_ProjectSet_WorkCate> Jpa_FindAll();
+
+
+    @Query(value =
+            "WITH RECURSIVE cte (id, title, parent_id) " +
+                    "AS (\n" +
+            "   SELECT id, title, parent_id\n" +
+            "   FROM category\n" +
+            "   WHERE parent_id = '1'\n" +
+            "   UNION ALL\n" +
+            "   SELECT p.id, p.title, p.parent_id\n" +
+            "   FROM category p\n" +
+            "   INNER JOIN cte\n" +
+            "       ON p.parent_id = cte.id\n" +
+            ")\n" +
+            "SELECT * FROM cte;", nativeQuery = true)
+    List<Tbl_ProjectSet_WorkCate> Jpa_FindTree();
+
+
+//    @Procedure(procedureName = "GET_PARENT_TREE_PATH")
+//    String GetParentTreePath(String path, int pid);
 }

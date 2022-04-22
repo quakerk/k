@@ -1,11 +1,11 @@
 package TestReact.k.Entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Builder
 @Entity
@@ -29,9 +29,29 @@ public class Tbl_ProjectSet_WorkCate
     @Column(name = "child")
     private int child;
 
+    @Setter
     @Column(name = "node")
     private String node;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_pid")
+    @Setter
+    private Tbl_ProjectSet_WorkCate parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Tbl_ProjectSet_WorkCate> SubCate = new ArrayList<>();
+
+
+    public Tbl_ProjectSet_WorkCate(final String name, final Long pid, final Tbl_ProjectSet_WorkCate p)
+    {
+        this.id = 0;
+        this.title = name;
+        this.parent_id = pid;
+        this.parent = p;
+        this.child = 0;
+        this.node = null;
+    }
 
     public Tbl_ProjectSet_WorkCate(int id, String title, String path)
     {

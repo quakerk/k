@@ -15,7 +15,7 @@ public class Dto_ProjectSet_WorkCate
     private long Id;
     private String Title;
     private long ParentId;
-    private int Child;   // 자식이 있으면 1, 아니면 0
+    private int Child;   // 자식이 있으면 자식수, 아니면 0
     private String Node;    // 카테고리 노드 패쓰
 
 
@@ -26,6 +26,13 @@ public class Dto_ProjectSet_WorkCate
         this.Title = title;
         this.ParentId = pid;
         this.Child = sub;
+
+        if(pid != 0)
+            this.ParentId = pid;
+
+        if( sub != 0)
+            this.Child = sub;
+
         this.Node = node;
     }
 

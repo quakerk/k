@@ -51,8 +51,8 @@ public class TblProjectMain
     private Date startdate;
 
 
-    public TblProjectMain(String title, int wgrpid, int cateid, int pgrs, int adminid, String info, String fp,
-                          String imgp, Date date)
+    public TblProjectMain(String title, int wgrpid, int cateid, int pgrs, int adminid,
+                          String info, String fp, String imgp, Date date)
     {
         this.id         = 0;
         this.title      = title;

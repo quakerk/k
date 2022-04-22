@@ -43,13 +43,35 @@ public class Dto_ProjectMain
     public TblProjectMain toEntity()
     {
         return TblProjectMain.builder()
+                .title(this.Title)
+                .wgrp_pid(this.WgrpPid)
+                .cate_pid(this.CatePid)
+                .info(this.Info)
+                .filepath(this.FilePath)
+                .imgpath(this.ImgPaht)
+                .pgrs(this.Pgrs)
+                .admin_uid(this.AdminUid)
+                .startdate(this.Date)
                 .build();
     }
 
+
     public Dto_ProjectMain Response(TblProjectMain enti)
     {
+        this.Id     = enti.getId();
+        this.Title  = enti.getTitle();
+        this.WgrpPid = enti.getWgrp_pid();
+        this.CatePid = enti.getCate_pid();
+        this.Info   = enti.getInfo();
+        this.FilePath   = enti.getFilepath();
+        this.ImgPaht    = enti.getImgpath();
+        this.Pgrs   = enti.getPgrs();
+        this.AdminUid   = enti.getAdmin_uid();
+        this.Date   = enti.getStartdate();
+
         return this;
     }
+
 
     public void Update()
     {

@@ -1,11 +1,11 @@
 package TestReact.k.Svc;
 
 import TestReact.k.Dto.Dto_ProjectMain;
+import TestReact.k.Dto.Dto_Workgrp;
 import TestReact.k.Entity.TblProjectMain;
-import TestReact.k.Entity.TblTest;
-import TestReact.k.JpaRepo.ProjectMngRepo;
-import TestReact.k.JpaRepo.TestRepo;
-import TestReact.k.Dto.Dto_Test;
+import TestReact.k.Entity.Tbl_WorkGrp;
+import TestReact.k.JpaRepo.Repo_ProjectMng;
+import TestReact.k.JpaRepo.Repo_WorkGrp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +16,21 @@ import java.util.Optional;
 @Service
 public class Svc_ProjectMng
 {
-    private final ProjectMngRepo repoPrj;
+    private final Repo_ProjectMng repoPrj;
+    private final Repo_WorkGrp  repoWork;
 
     @Transactional
-    public long CreateProject(Dto_ProjectMain dtoPrj)
+    public long CreatePrj(Dto_ProjectMain dtoPrj)
     {
+        //repoPrj.Dsl_Create();
         TblProjectMain t = repoPrj.save( dtoPrj.toEntity() );
         return t.getId();
+    }
+
+    public long CreatePrjWork(Dto_Workgrp dto)
+    {
+        Tbl_WorkGrp t = repoWork.save( dto.toEntity() );
+        return 0;
     }
 
     @Transactional
@@ -37,7 +45,6 @@ public class Svc_ProjectMng
         }
 
         //repo.get().Update(dtoPrj.getStr(), dtoPrj.getIdx(), dtoPrj.getPid(), dtoPrj.getDate());
-
         return id;
     }
 
