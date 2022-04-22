@@ -1,25 +1,21 @@
 package TestReact.k.Ctrler;
 
 import TestReact.k.Dto.Dto_ProjectSet_WorkCate;
-import TestReact.k.Entity.QTbl_ProjectSet_WorkCate;
 import TestReact.k.Entity.Tbl_ProjectSet_WorkCate;
-import TestReact.k.Global.SuppCateOrder;
 import TestReact.k.JpaRepo.Repo_ProjectSet_WorkCate;
+import TestReact.k.Response.ResultOne;
+import TestReact.k.Response.ResultResponse;
+import TestReact.k.Svc.ReturnRes;
 import TestReact.k.Svc.Svc_ProjectSet;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 
@@ -29,152 +25,234 @@ import java.util.List;
 public class ApiCtrler_ProjectSet
 {
     @Autowired
-    Repo_ProjectSet_WorkCate RepoWorkCate;
-
-    @Autowired
     EntityManager   enttMng;
 
-    private final Svc_ProjectSet SvcWorkSet;
+    private final Svc_ProjectSet mSvcWorkSet;
+    private final ReturnRes mRet;
 
+    private List<Tbl_ProjectSet_WorkCate> mAllList;
 
     @PostMapping(value = "/api/SetWorkCate/New")
     @ResponseBody
-    public long CreateWork(@RequestParam(value = "jstr") String jstr)
+    public ResultOne<String> CreateWork(@RequestParam(value = "jstr") String jstr)
     {
         long id = 0;
+        String ret="";
         try
         {
             System.out.print("RECV : WorkCate Set > " + jstr + "\n");
 
             JSONObject j = new JSONObject(jstr);
-            long uid = j.getInt("id");
+            long pid = j.getLong("pid");
+            String title = j.getString("title");
 
-            id = SvcWorkSet.CreateNewCate( new Dto_ProjectSet_WorkCate("이름 설정하시오", 1, 0, "0") );
+            id = mSvcWorkSet.CreateNewCate( new Dto_ProjectSet_WorkCate(title, pid, 0, "0") );
+
+            mAllList = mSvcWorkSet.GetCateAll();
+            try
+            {
+                JSONArray ja = new JSONArray();
+
+                ParseData(ja, mAllList);    // 이걸로 되나>??
+                ret = ja.toString();
+            }
+            catch (Exception e)
+            {
+                System.out.print("error : "+e.getMessage());
+            }
         }
         catch (Exception e)
         {
             System.out.print("ERROR : WorkCate Set >> " + e.getMessage());
         }
 
-        return id;
+        return mRet.Ret(ret);
     }
 
 
     // 카테고리 서브 등록
     @PostMapping(value = "/api/SetWorkCate/Add")
     @ResponseBody
-    public long AddSubWork(@RequestParam(value = "jstr") String jstr)
+    public ResultOne<String> AddSubWork(@RequestParam(value = "jstr") String jstr)
     {
-        long id = 0;
+        System.out.print("Recv : AddSubWork > "+jstr);
+        try
+        {
+            JSONObject j = new JSONObject(jstr);
+            long pid = j.getLong("pid");
+            String title = j.getString("title");
 
-        return id;
+            long id = mSvcWorkSet.AddSubCate(SearchListBufById(pid, mAllList), new Dto_ProjectSet_WorkCate(title, pid, 0, "") );
+            if( id <= 0)
+                return mRet.RetErr(0, "update failed");
+
+            List<Tbl_ProjectSet_WorkCate> res = mSvcWorkSet.GetCateAll();
+            JSONArray ja = new JSONArray();
+            ParseData(ja, res);
+
+
+            return mRet.Ret(ja.toString());
+        }
+        catch (Exception e)
+    {
+            System.out.print("error : "+e.getMessage());
+        }
+
+        return mRet.RetErr(0, "update failed");
     }
 
 
     //카테고리 수정
     @PutMapping("/api/SetWorkCate/Update/{id}")
     //public void UpdatePrjData(@PathVariable long id, @RequestBody Dto_ProjectMng dtoPrj)
-    public int UpdateWork(@PathVariable long id, @RequestParam(value = "json") String jstr)
+    public ResultOne<String> UpdateCateById(@PathVariable long id, @RequestParam(value = "json") String jstr)
     {
-        int ret = 0;
+        long ret = 0;
         System.out.print(">>>SetWork update > " + jstr+ "\n");
         try
         {
-//            Dto_ProjectSet_WorkCate dto = new Dto_ProjectSet_WorkCate();
-//            Svc_ProjectSet.Update(id, dto);
+            JSONObject j = new JSONObject(jstr);
 
-            ret = 1;
+            ret = mSvcWorkSet.UpdateCateById(id,
+                                new Dto_ProjectSet_WorkCate(j.getString("title"), 0,-1, "") );
+
+            if(ret < 0)
+                return mRet.RetErr(0, "update failed");
+
+            mAllList = mSvcWorkSet.GetCateAll();
+            JSONArray ja = new JSONArray();
+            ParseData(ja, mAllList);    // 이걸로 되나>??
+
+            return mRet.Ret(ja.toString());
+
         }
         catch (Exception e)
         {
             System.out.print("json error > "+e.getMessage());
         }
 
-        return ret;
+        return mRet.RetErr(0, "update failed");
     }
 
 
     // 카테고리 조회
     @GetMapping("/api/SetWorkCate/Get")
-    public String GetCateAll()
+    public ResultOne<String> GetCateAll()
     {
         // 카테고리 묶어서 조회 쿼리
-//        with recursive cte (id, title, cate_pid) as (
-//            select     id,
-//            title,
-//            cate_pid
-//            from       cate
-//              where cate_pid = '1'
-
-//            union all
-//            select     p.id,
-//            p.title,
-//            p.cate_pid
-//            from       cate p
-//            inner join cte
-//            on p.cate_pid = cte.id
-//    )
-//        select * from cte;
-
-        // 카테고리 패쓰로 뽑는 쿼리
-//        DROP PROCEDURE IF EXISTS getpath;
-//        DELIMITER $$
-//        CREATE PROCEDURE getpath(IN cat_id INT, OUT path TEXT)
-//        BEGIN
-//        DECLARE catname VARCHAR(20);
-//        DECLARE temppath TEXT;
-//        DECLARE tempparent INT;
-//        SET max_sp_recursion_depth = 255;
-//        SELECT name, parent_id FROM category WHERE id=cat_id INTO catname, tempparent;
-//        IF tempparent IS NULL
-//        THEN
-//        SET path = catname;
-//        ELSE
-//        CALL getpath(tempparent, temppath);
-//        SET path = CONCAT(temppath, '/', catname);
-//        END IF;
-//        END$$
-//        DELIMITER ;
-//        저장 프로시저의 래퍼 함수:
-//
-//        DROP FUNCTION IF EXISTS getpath;
-//        DELIMITER $$
-//        CREATE FUNCTION getpath(cat_id INT) RETURNS TEXT DETERMINISTIC
-//        BEGIN
-//        DECLARE res TEXT;
-//        CALL getpath(cat_id, res);
-//        RETURN res;
-//        END$$
-//        DELIMITER ;
-//        예를 선택하십시오:
-//
-//        SELECT id, name, getpath(id) AS path FROM category;
-
         System.out.print(">>>SetWork findAll > ");
 
- //       Tbl_ProjectSet_WorkCate wc = new Tbl_ProjectSet_WorkCate();
- //       enttMng.persist(wc);
-
-        //JPAQueryFactory qf = new JPAQueryFactory(enttMng);
-        //QTbl_ProjectSet_WorkCate qwc = QTbl_ProjectSet_WorkCate.tbl_ProjectSet_WorkCate;//new QTbl_ProjectSet_WorkCate("0, none, none");
-//        QTbl_ProjectSet_WorkCate  wc = QTbl_ProjectSet_WorkCate.tbl_ProjectSet_WorkCate;
-//        List<Tbl_ProjectSet_WorkCate> sel = qf.select(wc)
-//                .from(QTbl_ProjectSet_WorkCate.tbl_ProjectSet_WorkCate)
-//                .fetch();
-
         String ret = "0";
-        List<Tbl_ProjectSet_WorkCate> res = SvcWorkSet.GetCateAll();
+        mAllList = mSvcWorkSet.GetCateAll();
 
+        try
+        {
+            JSONArray ja = new JSONArray();
 
-        return  ret;
+            ParseData(ja, mAllList);    // 이걸로 되나>??
+            ret = ja.toString();
+        }
+        catch (Exception e)
+        {
+            System.out.print("error : "+e.getMessage());
+        }
+
+        return  mRet.Ret(ret);
     }
+
+
+
 
     // 카테고리 조회
     @GetMapping("/api/SetWorkCate/GetItem/{id}")
     public Dto_ProjectSet_WorkCate GetCateById(@PathVariable long id)
     {
         System.out.print(">>>SetWork findId > "+id);
-        return  SvcWorkSet.GetCateData(id);
+        return  mSvcWorkSet.GetCateData(id);
+    }
+
+
+    @DeleteMapping("/api/SetWorkCate/Delete/{id}")
+    public ResultOne<String> DeleteById(@PathVariable long id)
+    {
+        System.out.print(">>>Del id > "+id);
+        mAllList = mSvcWorkSet.DeleteItem(id);
+        String ret = "";
+
+        try
+        {
+            JSONArray ja = new JSONArray();
+
+            ParseData(ja, mAllList);    // 이걸로 되나>??
+            ret = ja.toString();
+
+            return mRet.Ret(ja.toString());
+        }
+        catch (Exception e)
+        {
+            System.out.print("error : "+e.getMessage());
+        }
+
+        return mRet.RetErr(0, "update failed");
+    }
+
+
+    @GetMapping("/api/SetWorkCate/GetItem/Test")
+    public ResultResponse RetTest()
+    {
+        System.out.print(">>> 리턴 테스트 드러옴");
+        return mRet.Ret("{id:1, msg:success}");
+    }
+
+
+    // util
+    protected Tbl_ProjectSet_WorkCate SearchListBufById(long fid, List<Tbl_ProjectSet_WorkCate> item)
+    {
+        Tbl_ProjectSet_WorkCate r = null;
+
+        for(Tbl_ProjectSet_WorkCate i : item)
+        {
+            if(i.getId() == fid)
+                return i;
+
+            if(i.getSubCate() != null)
+            {
+                r = SearchListBufById(fid, i.getSubCate());
+
+                if( r != null)
+                    return r;
+            }
+        }
+
+        return null;
+    }
+
+
+    protected void ParseData(JSONArray p, List<Tbl_ProjectSet_WorkCate> item)
+    {
+        for(Tbl_ProjectSet_WorkCate i : item)
+        {
+            JSONObject j = new JSONObject();
+            j.put("id", i.getId());
+            j.put("title", i.getTitle());
+            j.put("pid", i.getParent_id());
+
+
+            List<Tbl_ProjectSet_WorkCate> sub = i.getSubCate();
+            if( sub != null)
+            {
+                j.put("child", sub.size());
+                j.put("sub", new JSONArray());
+                ParseData(j.getJSONArray("sub"), sub);
+            }
+            else
+            {
+                j.put("child", 0);
+                j.put("sub", "none");
+            }
+
+            p.put(j);
+        }
     }
 }
 
